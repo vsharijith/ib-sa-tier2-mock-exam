@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IB SA Tier-2 Mock Exam</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      padding: 30px;
+    }
+
+    .exam-header {
+      position: sticky;
+      top: 0;
+      background: #ffffff;
+      z-index: 100;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #ddd;
+    }
+
+
+    .container {
+      padding-top: 10px;
+    }
+
+    textarea {
+     scroll-margin-top: 120px;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    p {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .timer {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: #d9534f;
+      display: none;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      margin-top: 8px;
+      padding: 10px;
+      font-size: 14px;
+      resize: none;
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 12px;
+      color: #555;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 25px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .finished {
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+      color: green;
+      margin-top: 30px;
+      display: none;
+    }
+
+    #retryBtn {
+      margin-top: 20px;
+      padding: 12px 30px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .timer-input-row input {
+      display: block;
+      margin-top: 6px;
+      width: 120px;
+      padding: 6px;
+      font-size: 14px;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .timer-input-row {
+      justify-content: center;
+      text-align: center;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .start-btn-wrapper {
+      text-align: center;
+    margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="exam-header">
+    <h1>IB SA Tier-2 Mock Exam</h1>
+    <p text-align = center>YOU CANNOT PAUSE THE TIMER ONCE EXAM BEGINS</p>
+
+  <div class="timer" id="timer">01:00:00</div>
+  </div>
+
+  <div id="passageSection">
+  <label for="malayalam">Malayalam Passage</label>
+  <textarea id="malayalam"></textarea>
+  <div class="char-count"></div>
+
+  <label for="english">English Passage</label>
+  <textarea id="english"></textarea>
+  <div class="char-count"></div>
+  </div>
+  
+  <div class="timer-input-row">
+  <label for="examTime">Enter Exam Duration (in minutes)</label>
+  <input type="number" id="examTime" min="1" value="60">
+  </div>
+
+  <div class="start-btn-wrapper">
+  <button id="startBtn">Submit & Start Exam</button>
+  </div>
+
+  <div class="finished" id="finishedMsg">
+    ⏰ Exam Finished. Time is up.
+    <br><br>
+    <button id="retryBtn" onclick="location.reload()">Attempt Another Exam</button>
+  </div>
+</div>
+
+<script>
+  const malayalam = document.getElementById("malayalam");
+  const english = document.getElementById("english");
+  const mlCount = document.getElementById("ml-count");
+  const enCount = document.getElementById("en-count");
+  const startBtn = document.getElementById("startBtn");
+  const timerDisplay = document.getElementById("timer");
+  const finishedMsg = document.getElementById("finishedMsg");
+
+  let examStarted = false;
+  let timerInterval;
+
+  // Character counters
+  function countWords(text) {
+  return text.trim() === "" ? 0 : text.trim().split(/\s+/).length;
+}
+
+malayalam.addEventListener("input", () => {
+  const words = countWords(malayalam.value);
+  mlCount.textContent = `${words} / 2000 words`;
+  if (words > 2000) {
+    alert("Malayalam passage exceeds 2000 words");
+    malayalam.value = malayalam.value.trim().split(/\s+/).slice(0, 2000).join(" ");
+  }
+});
+
+english.addEventListener("input", () => {
+  const words = countWords(english.value);
+  enCount.textContent = `${words} / 2000 words`;
+  if (words > 2000) {
+    alert("English passage exceeds 2000 words");
+    english.value = english.value.trim().split(/\s+/).slice(0, 2000).join(" ");
+  }
+});
+
+
+  function formatTime(seconds) {
+    const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+    const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+    const s = String(seconds % 60).padStart(2, '0');
+    return `${h}:${m}:${s}`;
+  }
+
+  function startTimer() {
+    timerDisplay.style.display = "block";
+    timerDisplay.textContent = formatTime(timeLeft);
+
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      timerDisplay.textContent = formatTime(timeLeft);
+
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval);
+        endExam();
+      }
+    }, 1000);
+  }
+
+  function endExam() {
+    timerDisplay.textContent = "00:00:00";
+    document.getElementById("passageSection").style.display = "none";
+    finishedMsg.style.display = "block";
+  }
+
+  startBtn.addEventListener("click", () => {
+    if (examStarted) return;
+
+    if (!malayalam.value.trim() || !english.value.trim()) {
+      alert("Please enter both Malayalam and English passages before starting.");
+      return;
+    }
+
+      examStarted = true;
+      malayalam.disabled = true;
+      english.disabled = true;
+      startBtn.disabled = true;
+      document.getElementById("startBtn").style.display = "none";
+      document.getElementById("examTime").style.display = "none";
+      document.querySelector('label[for="examTime"]').style.display = "none";
+
+    const minutes = parseInt(document.getElementById("examTime").value);
+
+    if (!minutes || minutes <= 0) {
+    alert("Please enter a valid exam duration.");
+    return;
+    }
+
+    timeLeft = minutes * 60;
+
+    document.getElementById("examTime").disabled = true;
+
+    window.scrollTo({ top: 0, behavior: "instant" });
+
+    startTimer();
+    }
+
+  );
+</script>
+
+</body>
+</html>
